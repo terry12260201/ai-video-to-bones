@@ -53,9 +53,12 @@ for fr in range(1, F):
 
 sc.frame_set(1)
 bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "walk_loop.blend"))     # .blend 保留模型原本所有動畫
+sc.frame_end = F
+if os.environ.get("AV2B_EXPORT_ALL"):                         # 連同模型原本的動畫一起匯出一顆「全動畫」GLB
+    for t in arm.animation_data.nla_tracks: t.mute = False
+    bpy.ops.export_scene.gltf(filepath=os.path.join(OUT, "model_all_actions.glb"), export_format="GLB", export_animation_mode="ACTIONS", export_force_sampling=True)
 for t in list(arm.animation_data.nla_tracks): arm.animation_data.nla_tracks.remove(t)
 for a in list(bpy.data.actions):
-    if a != act: bpy.data.actions.remove(a)
-sc.frame_end = F                                              # .glb 要含收尾那格，引擎循環才不會少一拍
+    if a != act: bpy.data.actions.remove(a)                                              # .glb 要含收尾那格，引擎循環才不會少一拍
 bpy.ops.export_scene.gltf(filepath=os.path.join(OUT, "walk_loop.glb"), export_format="GLB", export_animation_mode="ACTIONS", export_frame_range=True, export_force_sampling=True)
 print("DONE", C.ACTION, F, "格")

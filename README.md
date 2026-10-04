@@ -92,11 +92,20 @@ input/video.mp4
 
 ## 🚀 八個步驟
 
+> [!TIP]
+> 只想知道「人要做什麼、AI 要做什麼」和可以直接貼的影片 Prompt，看 [docs/SOP.md](docs/SOP.md)。下面是每一步的技術細節。
+
 所有指令都在 repo 根目錄下執行。要改的設定全部集中在 [`scripts/config.py`](scripts/config.py)。
 
 ### 步驟零：先生出一支好對的影片
 
-影片拍得好，後面省一半力氣。把模型從正側面、素色背景算一張圖，丟給影片生成 AI，提示詞照影片作者的四條約束寫：
+影片拍得好，後面省一半力氣。先算一張正側面、素色灰底的參考圖：
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender -b --python scripts/00_render_side.py
+```
+
+把 `output/side_ref.png` 當首幀丟給影片生成 AI（我用 Seedance 2.5，720p、5 秒）。提示詞照影片作者的四條約束寫，完整可貼的版本在 [docs/SOP.md](docs/SOP.md#️-prompt)：
 
 1. 只要側面
 2. 鏡頭跟著動物走（動物留在畫面中間）
