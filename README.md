@@ -79,7 +79,7 @@ flowchart LR
 |---|---|---|
 | 綁好骨架的 3D 模型（`.glb`） | 四足動物，權重要先刷好 | 🟡 自備 |
 | 一支 AI 生成的側面影片（`.mp4`） | 用你自己模型的側面圖去生，做法見步驟零 | 🟡 自備（生成要額度） |
-| [Blender](https://www.blender.org/) 4.x 或 5.x | 我用 5.1.2；不用開視窗，程式會在背景跑 | 🟢 免費 |
+| [Blender](https://www.blender.org/) 一定要 5或以上的版本  | 我用 5.1.2；不用開視窗，程式會自動在背景跑 | 🟢 免費 |
 | Python 3.10 以上＋三個套件 | `pip install numpy scipy opencv-python` | 🟢 免費 |
 | [ffmpeg](https://ffmpeg.org/) | 拆影片、做對照影片用 | 🟢 免費 |
 
