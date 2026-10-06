@@ -6,6 +6,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import config as C
 
 d = np.load(os.path.join(C.WORK, "final.npz"))
+LOOP = bool(d["loop"]) if "loop" in d else True; STEP = int(d["step"]) if "step" in d else 1
 SM = d["S"]; names = [str(n) for n in d["names"]]; cam = d["cam"]; tgt = d["tgt"]; W_, H_ = [int(v) for v in d["size"]]
 OUT = os.path.abspath(C.OUT); os.makedirs(os.path.join(OUT, "render"), exist_ok=True)
 
@@ -20,6 +21,7 @@ for t in list(arm.animation_data.nla_tracks): t.mute = True
 act = bpy.data.actions.new(C.ACTION); arm.animation_data.action = act
 rest = {b.name: b.matrix_local.copy() for b in arm.data.bones}
 F = SM.shape[0]; prevq = {}
+def frame_no(fi): return fi * STEP + 1
 for fi in range(F):
     pose = {n: Matrix(SM[fi, i].tolist()) @ rest[n] for i, n in enumerate(names)}
     for n in C.DOF:
@@ -31,10 +33,11 @@ for fi in range(F):
         if n in prevq and prevq[n].dot(q) < 0: q.negate()      # 四元數正負號保持連續，不然中間會轉一大圈
         prevq[n] = q.copy()
         pb.rotation_mode = "QUATERNION"; pb.rotation_quaternion = q
-        pb.keyframe_insert("rotation_quaternion", frame=fi + 1, group=n)
-        if n == C.ROOT: pb.location = loc; pb.keyframe_insert("location", frame=fi + 1, group=n)
-act.use_frame_range = True; act.frame_start = 1; act.frame_end = F; act.use_cyclic = True; act.use_fake_user = True
-sc.frame_start = 1; sc.frame_end = F - 1                      # 最後一格 = 第一格，算圖不用重複
+        pb.keyframe_insert("rotation_quaternion", frame=frame_no(fi), group=n)
+        if n == C.ROOT: pb.location = loc; pb.keyframe_insert("location", frame=frame_no(fi), group=n)
+LAST = frame_no(F - 1)
+act.use_frame_range = True; act.frame_start = 1; act.frame_end = LAST; act.use_cyclic = LOOP; act.use_fake_user = True
+sc.frame_start = 1; sc.frame_end = (LAST - 1) if LOOP else LAST   # 循環：最後一格 = 第一格，算圖不用重複
 
 az, el, dist, f, cx, cy = [float(v) for v in cam]
 dv = Vector((math.cos(el) * math.cos(az), math.cos(el) * math.sin(az), math.sin(el)))
@@ -48,12 +51,12 @@ sd = bpy.data.lights.new("Sun", "SUN"); sd.energy = 2.2; so = bpy.data.objects.n
 so.rotation_euler = (math.radians(50), math.radians(-15), math.radians(60))
 sc.render.engine = "BLENDER_EEVEE"; sc.render.film_transparent = True
 sc.render.image_settings.file_format = "PNG"; sc.render.image_settings.color_mode = "RGBA"; sc.view_settings.view_transform = "Standard"
-for fr in range(1, F):
+for fr in range(1, sc.frame_end + 1):
     sc.frame_set(fr); sc.render.filepath = os.path.join(OUT, "render", f"r_{fr:03d}.png"); bpy.ops.render.render(write_still=True)
 
 sc.frame_set(1)
 bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "walk_loop.blend"))     # .blend 保留模型原本所有動畫
-sc.frame_end = F
+sc.frame_end = LAST
 if os.environ.get("AV2B_EXPORT_ALL"):                         # 連同模型原本的動畫一起匯出一顆「全動畫」GLB
     for t in arm.animation_data.nla_tracks: t.mute = False
     bpy.ops.export_scene.gltf(filepath=os.path.join(OUT, "model_all_actions.glb"), export_format="GLB", export_animation_mode="ACTIONS", export_force_sampling=True)

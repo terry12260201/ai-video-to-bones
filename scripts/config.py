@@ -3,10 +3,16 @@
 import os
 
 # ── 路徑（也可以用環境變數蓋掉）────────────────────────────
+PROJECT = os.environ.get("AV2B_PROJECT", "")              # 多支動畫時：projects/<名稱>.py 會蓋掉下面的設定
 WORK  = os.environ.get("AV2B_WORK",  "work")              # 中間檔都放這
 GLB   = os.environ.get("AV2B_GLB",   "input/model.glb")   # 綁好骨架的模型
 VIDEO = os.environ.get("AV2B_VIDEO", "input/video.mp4")   # AI 生成的側面影片
 OUT   = os.environ.get("AV2B_OUT",   "output")
+
+# ── 動作類型 ──────────────────────────────────────────────
+SYMMETRY = True      # loop 用：左右腳差半圈（走路、小跑成立；奔跑不成立）
+MODE = "loop"        # loop = 循環動作（走、跑）；oneshot = 一次性動作（吃、喝、坐下），從 START 做到 END 不接頭尾
+START, END = 0, 0    # oneshot 用：影片第幾格到第幾格（0 起算，含 END）
 
 # ── 模型 ──────────────────────────────────────────────────
 ARMATURE = "Arm_Beagle"       # 骨架物件名稱
@@ -21,6 +27,7 @@ DOF = ["Spine_base", "Spine_03", "Spine_05", "neck", "head",
 for s in ("L", "R"):
     DOF += [f"hip_f.{s}", f"thigh_f.{s}", f"leg_f.{s}", f"shin_f.{s}", f"foot_f.{s}",
             f"hip_b.{s}", f"thigh_b.{s}", f"leg_b.{s}", f"shin_b.{s}", f"foot_b.{s}"]
+DOF += ["Ear_01.L", "Ear_01.R", "mouth"]   # 耳朵甩動、嘴巴開合（低頭吃東西時看得到）
 
 # 每條腿從身體根到腳掌的骨頭鏈（用來算「腳掌對地面的角度」）
 def leg_chain(l):
@@ -35,6 +42,7 @@ PAW_BONES = lambda l: [f"foot_{l}", f"claws_{l}"]
 LIMITS = {"hip_f": (-.45, .45), "thigh_f": (-.9, .9), "leg_f": (-1.5, .25), "shin_f": (-.3, 2.0), "foot_f": (-.5, .7),
           "hip_b": (-.35, .35), "thigh_b": (-.9, .7), "leg_b": (-.5, 1.2), "shin_b": (-1.2, .5), "foot_b": (-.5, .8)}
 DEFAULT_LIMIT = (-.5, .5)
+LIMITS.update({"Ear_01": (-.9, .9), "mouth": (-.1, .7), "neck": (-1.2, .6), "head": (-.9, .9), "Spine_03": (-.5, .5), "Spine_05": (-.7, .5)})
 TAIL_LIMIT = (-.8, .8)
 
 # ── 影片 ──────────────────────────────────────────────────
@@ -62,3 +70,11 @@ KP = {
 112:[(382,702),(332,655),(895,692,.3),(640,675)], 113:[(408,702),(288,658),(900,680,.3),(660,675)],
 114:[(428,703),(268,662),(890,668,.3),(678,675)], 115:[(448,703),(245,665),(860,662,.3),(692,678)],
 }
+
+# ── 多專案：AV2B_PROJECT=trot 會載入 projects/trot.py，裡面的變數蓋掉上面的 ──
+if PROJECT:
+    import importlib.util as _u, pathlib as _p
+    _f = _p.Path(__file__).parent / "projects" / f"{PROJECT}.py"
+    _spec = _u.spec_from_file_location("proj", _f); _m = _u.module_from_spec(_spec); _spec.loader.exec_module(_m)
+    globals().update({k: v for k, v in vars(_m).items() if not k.startswith("_")})
+    WORK = os.environ.get("AV2B_WORK", f"work/{PROJECT}"); OUT = os.environ.get("AV2B_OUT", f"output/{PROJECT}")
