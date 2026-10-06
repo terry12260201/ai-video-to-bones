@@ -42,11 +42,12 @@ def face_value(fc, f, L, loop):
         s0 = max(L, 30); a = (f - 1) / max(L - 1, 1)
         return (1 - a) * fc.evaluate(s0 + f) + a * fc.evaluate(s0 + f - L)
     return fc.evaluate(((f - 1) % IDLE_LEN) + 1)
-def add_face_layer(act, last, loop, step):
+def add_face_layer(act, last, loop, step, exclude=()):
     if not IDLE_FC: print("  (沒有", IDLE, "，略過生命感層)"); return
     arm.animation_data.action = act
     for f in range(1, last + 1, step):
         for bone, props in IDLE_FC.items():
+            if bone in exclude: continue                      # 這支動畫自己有耳朵／嘴巴資料時，不要被 Idle 蓋掉
             pb = arm.pose.bones[bone]
             for prop, idx in props.items():
                 vals = [face_value(idx[i], f, last, loop) for i in sorted(idx)]
@@ -78,7 +79,7 @@ def build_action(C):
             pb.keyframe_insert("rotation_quaternion", frame=fi * STEP + 1, group=n)
             if n == C.ROOT: pb.location = loc; pb.keyframe_insert("location", frame=fi * STEP + 1, group=n)
     last = (F - 1) * STEP + 1
-    add_face_layer(act, last, LOOP, STEP)
+    add_face_layer(act, last, LOOP, STEP, exclude=tuple(getattr(C, 'FACE_LAYER_EXCLUDE', ())))
     act.use_frame_range = True; act.frame_start = 1; act.frame_end = last; act.use_cyclic = LOOP; act.use_fake_user = True
     # 推進 NLA，讓匯出器把它當獨立動畫
     tr = arm.animation_data.nla_tracks.new(); tr.name = C.ACTION; tr.strips.new(C.ACTION, 1, act); tr.mute = False

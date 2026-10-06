@@ -8,7 +8,10 @@ import config as C
 d = np.load(os.path.join(C.WORK, "final.npz"))
 LOOP = bool(d["loop"]) if "loop" in d else True; STEP = int(d["step"]) if "step" in d else 1
 SM = d["S"]; names = [str(n) for n in d["names"]]; cam = d["cam"]; tgt = d["tgt"]; W_, H_ = [int(v) for v in d["size"]]
-OUT = os.path.abspath(C.OUT); os.makedirs(os.path.join(OUT, "render"), exist_ok=True)
+RDIR = "render"
+if os.environ.get("AV2B_CAM_FILE"):                            # 用另一支影片的攝影機算圖（例如正面），只算圖不存檔
+    cam = np.load(os.environ["AV2B_CAM_FILE"]); RDIR = "render_" + os.path.basename(os.environ["AV2B_CAM_FILE"]).split(".")[0]
+OUT = os.path.abspath(C.OUT); os.makedirs(os.path.join(OUT, RDIR), exist_ok=True)
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=os.path.abspath(C.GLB))
@@ -52,8 +55,9 @@ so.rotation_euler = (math.radians(50), math.radians(-15), math.radians(60))
 sc.render.engine = "BLENDER_EEVEE"; sc.render.film_transparent = True
 sc.render.image_settings.file_format = "PNG"; sc.render.image_settings.color_mode = "RGBA"; sc.view_settings.view_transform = "Standard"
 for fr in range(1, sc.frame_end + 1):
-    sc.frame_set(fr); sc.render.filepath = os.path.join(OUT, "render", f"r_{fr:03d}.png"); bpy.ops.render.render(write_still=True)
+    sc.frame_set(fr); sc.render.filepath = os.path.join(OUT, RDIR, f"r_{fr:03d}.png"); bpy.ops.render.render(write_still=True)
 
+if os.environ.get("AV2B_CAM_FILE"): print("DONE render only", RDIR); raise SystemExit
 sc.frame_set(1)
 bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "walk_loop.blend"))     # .blend 保留模型原本所有動畫
 sc.frame_end = LAST

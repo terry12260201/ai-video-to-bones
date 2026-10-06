@@ -31,27 +31,29 @@ def prior(z, kp, k=None):
         e = min(k, N - 1 - k)
         if e < EDGE: out.append((z - xs) * (2.5 * (1 - e / EDGE)))                                # 腳趾別亂翻
     for i, l in enumerate(legs):                            # 踩在地上的腳掌要放平（整條鏈的角度加起來 = 0）
-        if kp[i][1] >= C.GROUND_Y[l] and len(kp[i]) == 2: out.append([z[chain[l]].sum() * 2.0])
+        if kp[i][1] >= GY[l]: out.append([z[chain[l]].sum() * 2.0])
     return np.concatenate(out)
 
 def res(z, tg, kp, wk, extra=None, k=None):
     p2 = project(pose_verts(z), cam); paws = pawW @ p2
     rk = np.concatenate([(paws[i] - np.array(kk[:2]) * SC) * wk * (kk[2] if len(kk) > 2 else 1) for i, kk in enumerate(kp)])
-    out = [sil_resid(p2, tg), rk, prior(z, kp, k), (z - xs) * 0.08]
+    out = [sil_resid(p2, tg), rk, prior(z, kp, k), (z - xs) * 0.08, (z[:2] - xs[:2]) * getattr(C, 'ROOT_PRIOR', 0.0)]
     if extra is not None: out.append(extra(z))
     return np.concatenate(out)
 
 ONESHOT = getattr(C, "MODE", "loop") == "oneshot"
+GY = C.GROUND_Y
 if ONESHOT:
     # 一次性動作：從 START 到 END，每 STEP 格對一次；腳掌預設「留在站姿的位置」（吃、喝、坐下前半段都成立）
     STEP = getattr(C, "STEP", 1); FR = list(range(C.START, C.END + 1, STEP)); N = len(FR)
     p_stand = pawW @ project(pose_verts(xs), cam) / SC
-    kp_stand = [(float(p_stand[i][0]), float(p_stand[i][1]), 0.6) for i in range(4)]
+    kp_stand = [(float(p_stand[i][0]), float(p_stand[i][1]), getattr(C, "STAND_KP_W", 0.6)) for i in range(4)]
     KP = [C.KP.get(f, kp_stand) for f in FR]
+    GY = {l: float(p_stand[i][1]) - 10 for i, l in enumerate(legs)}   # 地面線＝站姿腳掌再往上 10px，低於這條就當踩地
 else:
     FR = [A0 + k for k in range(N)]; KP = [C.KP[A0 + k] for k in range(N)]
 tgs = [Target(M[f]) for f in FR]
-X = np.zeros((N, NP)); x = np.clip(xs, lo + 1e-3, hi - 1e-3); t0 = time.time()
+X = np.zeros((N, NP)); x = np.clip(xs, lo + 1e-4, hi - 1e-4); t0 = time.time()
 # 第一輪：一格接一格。先讓腳掌標記帶路（權重 3），再放手讓剪影收尾（權重 0.6）
 for k in range(N):
     r = least_squares(res, x, args=(tgs[k], KP[k], 3.0, None, k), diff_step=0.01, max_nfev=25, bounds=(lo, hi))
