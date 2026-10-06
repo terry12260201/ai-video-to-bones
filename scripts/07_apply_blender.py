@@ -24,7 +24,7 @@ F = SM.shape[0]; prevq = {}
 def frame_no(fi): return fi * STEP + 1
 for fi in range(F):
     pose = {n: Matrix(SM[fi, i].tolist()) @ rest[n] for i, n in enumerate(names)}
-    for n in C.DOF:
+    for n in dict.fromkeys(d.split(':')[0] for d in C.DOF):   # 去掉軸向後綴、去重
         pb = arm.pose.bones[n]; b = pb.bone
         # 把「骨頭在空間中的最終位置」換算回 Blender 要的「相對父骨頭的局部旋轉」
         if b.parent: basis = (rest[b.parent.name].inverted() @ rest[n]).inverted() @ (pose[b.parent.name].inverted() @ pose[n])

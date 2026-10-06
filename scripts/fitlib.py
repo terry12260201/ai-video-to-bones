@@ -8,7 +8,9 @@ V = rig["V"]; T = rig["T"]; W = rig["W"].astype(np.float64)
 names = [str(n) for n in rig["names"]]; parents = rig["parents"]; heads = rig["heads"]
 NB = len(names); idx = {n: i for i, n in enumerate(names)}
 DOF = C.DOF; NP = 2 + len(DOF)            # 參數 = 身體根的前後、上下平移 + 每根骨頭一個角度
-dof_bone = [idx[n] for n in DOF]
+def dof_split(n):                          # "head:Z" → ("head", 2)；"head" → ("head", 0)
+    b, _, ax = n.partition(":"); return b, {"X": 0, "Y": 1, "Z": 2}.get(ax or "X", 0)
+dof_bone = [idx[dof_split(n)[0]] for n in DOF]; dof_axis = [dof_split(n)[1] for n in DOF]
 Vh = np.c_[V, np.ones(len(V))]
 BW = sp.csr_matrix((W[:, :, None] * Vh[:, None, :]).reshape(len(V), -1))   # 稀疏矩陣：蒙皮快 100 倍
 TGT = (V.min(0) + V.max(0)) / 2           # 攝影機看向模型中心
@@ -16,18 +18,23 @@ SC = 0.5                                  # 用半解析度比對，快 4 倍
 _m = np.load(os.path.join(C.WORK, "masks.npy"), mmap_mode="r")
 FH, FW = _m.shape[1:]; HW = (int(FH * SC), int(FW * SC))
 
-def rotx(h, a):
-    """繞著通過 h 點的左右軸（X）轉 a 弧度"""
-    c, s = np.cos(a), np.sin(a); M = np.eye(4); M[1:3, 1:3] = [[c, -s], [s, c]]
-    M[:3, 3] = h - M[:3, :3] @ h; return M
+def rotx(h, a, axis=0):
+    """繞著通過 h 點、方向為 axis（0=X 左右軸、1=Y 前後軸、2=Z 上下軸）的軸轉 a 弧度"""
+    c, s = np.cos(a), np.sin(a); R = np.eye(3)
+    i, j = [(1, 2), (2, 0), (0, 1)][axis]
+    R[i, i] = c; R[i, j] = -s; R[j, i] = s; R[j, j] = c
+    M = np.eye(4); M[:3, :3] = R; M[:3, 3] = h - R @ h; return M
 
 def skin_mats(x):
     """參數 → 每根骨頭的「相對原始姿勢的變換矩陣」（父骨頭帶著子骨頭一起動）"""
-    ang = np.zeros(NB); ang[dof_bone] = x[2:]
+    ang = {}
+    for k, (b, ax) in enumerate(zip(dof_bone, dof_axis)):
+        if x[2 + k] != 0: ang.setdefault(b, []).append((ax, x[2 + k]))
     Sm = np.zeros((NB, 4, 4))
     for b in range(NB):                                   # 骨頭清單本來就是父在前
         P = Sm[parents[b]] if parents[b] >= 0 else np.eye(4)
-        M = rotx(heads[b], ang[b]) if ang[b] != 0 else np.eye(4)
+        M = np.eye(4)
+        for ax, a in ang.get(b, []): M = M @ rotx(heads[b], a, ax)
         if names[b] == C.ROOT:
             Tm = np.eye(4); Tm[1, 3] = x[0] * 0.1; Tm[2, 3] = x[1] * 0.1; M = Tm @ M
         Sm[b] = P @ M

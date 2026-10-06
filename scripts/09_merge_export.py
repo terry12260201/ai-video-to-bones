@@ -68,7 +68,7 @@ def build_action(C):
     prevq = {}; F = SM.shape[0]
     for fi in range(F):
         pose = {n: Matrix(SM[fi, i].tolist()) @ rest[n] for i, n in enumerate(names)}
-        for n in C.DOF:
+        for n in dict.fromkeys(dd.split(':')[0] for dd in C.DOF):
             pb = arm.pose.bones[n]; b = pb.bone
             basis = ((rest[b.parent.name].inverted() @ rest[n]).inverted() @ (pose[b.parent.name].inverted() @ pose[n])) if b.parent else (rest[n].inverted() @ pose[n])
             loc, q, _ = basis.decompose()

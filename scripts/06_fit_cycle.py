@@ -7,19 +7,21 @@ from fitlib import *
 
 M = load_masks(); cam = np.load(os.path.join(C.WORK, "cam.npy")); xs = np.load(os.path.join(C.WORK, "x_stand.npy"))
 A0, N, legs = C.CYCLE_START, C.CYCLE_LEN, C.LEGS
-di = {n: i + 2 for i, n in enumerate(DOF)}
+di = {n: i + 2 for i, n in enumerate(DOF)}            # 名字含軸向，例如 "head:Z"
 pawW = []
 for l in legs:
     w = sum(W[:, idx[b]] for b in C.PAW_BONES(l)); pawW.append(w / w.sum())
 pawW = np.array(pawW)
 lo = np.full(NP, C.DEFAULT_LIMIT[0]); hi = np.full(NP, C.DEFAULT_LIMIT[1])
 for n, i in di.items():
-    if n.startswith("Tail"): lo[i], hi[i] = C.TAIL_LIMIT
+    base = n.split(":")[0]
+    if base.startswith("Tail"): lo[i], hi[i] = C.TAIL_LIMIT
     if n in C.LIMITS: lo[i], hi[i] = C.LIMITS[n]
-    elif n[:-2] in C.LIMITS: lo[i], hi[i] = C.LIMITS[n[:-2]]
+    elif base in C.LIMITS: lo[i], hi[i] = C.LIMITS[base]
+    elif base[:-2] in C.LIMITS: lo[i], hi[i] = C.LIMITS[base[:-2]]
 chain = {l: [di[n] for n in C.leg_chain(l) if n in di] for l in legs}
 footidx = [di[f"foot_{l}"] for l in legs]
-Lidx = [i for n, i in di.items() if n.endswith(".L")]; Ridx = [di[n[:-1] + "R"] for n, i in di.items() if n.endswith(".L")]
+Lidx = [i for n, i in di.items() if ".L" in n]; Ridx = [di[n.replace(".L", ".R")] for n, i in di.items() if ".L" in n]
 
 EDGE = getattr(C, "EDGE_FRAMES", 6)                         # oneshot：頭尾幾格釘回站姿，動畫才能接回待機
 spine_idx = [di[n] for n in ("Spine_03", "Spine_05") if n in di]

@@ -28,6 +28,7 @@ for s in ("L", "R"):
     DOF += [f"hip_f.{s}", f"thigh_f.{s}", f"leg_f.{s}", f"shin_f.{s}", f"foot_f.{s}",
             f"hip_b.{s}", f"thigh_b.{s}", f"leg_b.{s}", f"shin_b.{s}", f"foot_b.{s}"]
 DOF += ["Ear_01.L", "Ear_01.R", "mouth"]   # 耳朵甩動、嘴巴開合（低頭吃東西時看得到）
+# 需要離開側面平面的動作（抖毛、轉頭）在專案檔用 EXTRA_DOF 加："head:Z"=左右轉頭、"neck:Y"=側滾；見 fitlib.dof_split
 
 # 每條腿從身體根到腳掌的骨頭鏈（用來算「腳掌對地面的角度」）
 def leg_chain(l):
@@ -78,4 +79,5 @@ if PROJECT:
     _spec = _u.spec_from_file_location("proj", _f); _m = _u.module_from_spec(_spec); _spec.loader.exec_module(_m)
     globals().update({k: v for k, v in vars(_m).items() if not k.startswith("_")})
     LIMITS = dict(LIMITS, **globals().get("LIMITS_EXTRA", {}))
+    DOF = DOF + list(globals().get("EXTRA_DOF", []))
     WORK = os.environ.get("AV2B_WORK", f"work/{PROJECT}"); OUT = os.environ.get("AV2B_OUT", f"output/{PROJECT}")
