@@ -77,4 +77,5 @@ if PROJECT:
     _f = _p.Path(__file__).parent / "projects" / f"{PROJECT}.py"
     _spec = _u.spec_from_file_location("proj", _f); _m = _u.module_from_spec(_spec); _spec.loader.exec_module(_m)
     globals().update({k: v for k, v in vars(_m).items() if not k.startswith("_")})
+    LIMITS = dict(LIMITS, **globals().get("LIMITS_EXTRA", {}))
     WORK = os.environ.get("AV2B_WORK", f"work/{PROJECT}"); OUT = os.environ.get("AV2B_OUT", f"output/{PROJECT}")

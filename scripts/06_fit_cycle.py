@@ -21,16 +21,21 @@ chain = {l: [di[n] for n in C.leg_chain(l) if n in di] for l in legs}
 footidx = [di[f"foot_{l}"] for l in legs]
 Lidx = [i for n, i in di.items() if n.endswith(".L")]; Ridx = [di[n[:-1] + "R"] for n, i in di.items() if n.endswith(".L")]
 
-def prior(z, kp):
-    out = [z[footidx] * 0.5]                                # 腳趾別亂翻
+EDGE = getattr(C, "EDGE_FRAMES", 6)                         # oneshot：頭尾幾格釘回站姿，動畫才能接回待機
+spine_idx = [di[n] for n in ("Spine_03", "Spine_05") if n in di]
+def prior(z, kp, k=None):
+    out = [z[footidx] * 0.5, z[spine_idx] * 0.6]            # 脊椎彎太多外皮會扭曲，交給脖子去彎
+    if ONESHOT and k is not None:
+        e = min(k, N - 1 - k)
+        if e < EDGE: out.append((z - xs) * (2.5 * (1 - e / EDGE)))                                # 腳趾別亂翻
     for i, l in enumerate(legs):                            # 踩在地上的腳掌要放平（整條鏈的角度加起來 = 0）
         if kp[i][1] >= C.GROUND_Y[l] and len(kp[i]) == 2: out.append([z[chain[l]].sum() * 2.0])
     return np.concatenate(out)
 
-def res(z, tg, kp, wk, extra=None):
+def res(z, tg, kp, wk, extra=None, k=None):
     p2 = project(pose_verts(z), cam); paws = pawW @ p2
-    rk = np.concatenate([(paws[i] - np.array(k[:2]) * SC) * wk * (k[2] if len(k) > 2 else 1) for i, k in enumerate(kp)])
-    out = [sil_resid(p2, tg), rk, prior(z, kp), (z - xs) * 0.08]
+    rk = np.concatenate([(paws[i] - np.array(kk[:2]) * SC) * wk * (kk[2] if len(kk) > 2 else 1) for i, kk in enumerate(kp)])
+    out = [sil_resid(p2, tg), rk, prior(z, kp, k), (z - xs) * 0.08]
     if extra is not None: out.append(extra(z))
     return np.concatenate(out)
 
@@ -47,8 +52,8 @@ tgs = [Target(M[f]) for f in FR]
 X = np.zeros((N, NP)); x = np.clip(xs, lo + 1e-3, hi - 1e-3); t0 = time.time()
 # 第一輪：一格接一格。先讓腳掌標記帶路（權重 3），再放手讓剪影收尾（權重 0.6）
 for k in range(N):
-    r = least_squares(res, x, args=(tgs[k], KP[k], 3.0), diff_step=0.01, max_nfev=25, bounds=(lo, hi))
-    r = least_squares(res, r.x, args=(tgs[k], KP[k], 0.6), diff_step=0.01, max_nfev=25, bounds=(lo, hi))
+    r = least_squares(res, x, args=(tgs[k], KP[k], 3.0, None, k), diff_step=0.01, max_nfev=25, bounds=(lo, hi))
+    r = least_squares(res, r.x, args=(tgs[k], KP[k], 0.6, None, k), diff_step=0.01, max_nfev=25, bounds=(lo, hi))
     x = r.x; X[k] = x
 print(f"第一輪完成 {time.time() - t0:.0f}s", flush=True)
 
@@ -65,11 +70,12 @@ for sweep in range(4):
     if sweep < 3: refit_cam()
     for k in range(N):
         if ONESHOT:
-            nb = 0.5 * (X[max(k - 1, 0)] + X[min(k + 1, N - 1)]); ex = lambda z: (z - nb) * 1.2
+            nb = 0.5 * (X[max(k - 1, 0)] + X[min(k + 1, N - 1)]); ex = lambda z: (z - nb) * getattr(C, "TEMPORAL", 1.2)
         else:
             nb = 0.5 * (X[(k - 1) % N] + X[(k + 1) % N]); o = X[(k + N // 2) % N]
-            ex = (lambda z: np.r_[(z - nb) * 1.2, (z[Lidx] - o[Ridx]) * 0.4, (z[Ridx] - o[Lidx]) * 0.4]) if getattr(C, 'SYMMETRY', True) else (lambda z: (z - nb) * 1.2)
-        X[k] = least_squares(res, X[k], args=(tgs[k], KP[k], 0.4, ex), diff_step=0.01, max_nfev=15, bounds=(lo, hi)).x
+            TW = getattr(C, "TEMPORAL", 1.2)
+            ex = (lambda z: np.r_[(z - nb) * TW, (z[Lidx] - o[Ridx]) * 0.4, (z[Ridx] - o[Lidx]) * 0.4]) if getattr(C, 'SYMMETRY', True) else (lambda z: (z - nb) * TW)
+        X[k] = least_squares(res, X[k], args=(tgs[k], KP[k], 0.4, ex, k), diff_step=0.01, max_nfev=15, bounds=(lo, hi)).x
     print(f"掃描 {sweep + 1}/4 完成 {time.time() - t0:.0f}s", flush=True)
 
 # 循環平滑：只留前 5 個頻率（腳趾留 3 個）。這樣曲線一定平順，而且頭尾一定接得起來

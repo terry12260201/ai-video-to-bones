@@ -9,13 +9,18 @@
 ## 1. 固定段（每支都放，不要改）
 
 ```text
-Animate the exact stylized cartoon {SPECIES} game model in the supplied image.
+Animate the exact stylized cartoon {SPECIES} game model shown in 圖1 (reference image).
 Preserve its exact body proportions, colors, markings and exactly four legs — do not add, remove or merge limbs.
 {VIEW}
+Start from the exact standing pose in 圖1 and END in that same standing pose, so the clip can loop or chain back to idle.
 Locked-off tracking camera that follows the animal so it stays centered at a constant size.
 No cuts, no zoom, no camera rotation, no motion blur, no slow motion.
-Keep the plain flat grey studio background and even lighting. No ground shadow, no props, no text.
+Keep the plain flat grey studio background and even lighting exactly like 圖1. No ground shadow, no props, no text.
 ```
+
+> **為什麼一定要「頭尾同一個站姿」**：遊戲裡每支動畫都要接回待機。循環動作（走、跑）靠程式找週期；一次性動作（吃、喝、坐）靠影片頭尾都是站姿，程式再把頭尾幾格釘回站姿，接點才看不出來。影片本身沒有這段，程式救不回來。
+
+> **用「圖1」而不是「the supplied image」**：我們的影片工具在「圖生影片」模式會失敗，實際是走「文生影片＋參考圖」，參考圖的代號就是「圖1」。
 
 `{VIEW}` 三選一：
 
@@ -59,7 +64,7 @@ The tail is up and wags; the whole body is loose and lively, never stiff or robo
 | `HeadNod` | 點頭 | 側面 | `The dog stands still and nods its head twice in a clear up-and-down motion as if agreeing, ears swinging, tail wagging.` | `Audio: two soft happy huffs, light panting, no music.` | 5 |
 | `PetHead` | 摸頭反應 | 側面 ＋ 正面 | `A hand is NOT shown. The dog lowers its head slightly as if being petted, squints its eyes in pleasure, leans gently into the touch, then lifts its head and licks the air, tail wagging slowly.` | `Audio: a long content sigh, soft happy panting, no music.` | 5 |
 | `Spin` | 原地轉圈 | 側面 ＋ 斜角 | `The dog spins quickly in one full circle in place, chasing its own tail with its head turned back, body curved, little bouncy steps, then stops facing the same direction it started.` | `Audio: quick scrambling paw steps, excited yips, no music.` | 5 |
-| `BellyUp` | 翻肚 | 側面 ＋ 斜角 | `The dog is lying down, then rolls onto its back with all four legs in the air, paws relaxed and curled, belly up, head tilted sideways, tongue lolling out, tail wagging.` | `Audio: a rustling roll, a happy groan, relaxed panting, no music.` | 10 |
+| `BellyUp` | 翻肚 | **斜角 45°（主）＋ 側面** | 見下方第 4.1 節的完整版 | `Audio: a rustling roll, a happy groan, relaxed panting, no music.` | 10 |
 
 ## 4. 組合範例（直接貼）
 
@@ -76,6 +81,28 @@ The tail is up and wags; the whole body is loose and lively, never stiff or robo
 The dog drops into a play bow: front legs slide forward and the chest goes to the ground while the hindquarters stay high in the air, tail wagging fast, mouth open in a happy grin, then it bounces back up.
 Audio: an excited playful bark, fast tail swishing, a bouncy paw thump, no music.
 ```
+
+### 4.1 翻肚 `BellyUp`：為什麼主角度是斜角 45°
+
+翻肚是**繞著身體長軸滾**。側面鏡頭正對著這根軸，看到的只是「四條腿從下面跑到上面」，身體哪一面朝上幾乎分不出來；正面鏡頭看得到滾，但前腳會擋住後腳。**從動物的前左方 45°、略高一點**拍，滾動方向、四條腿、肚子朝上都同時看得到，Claude 才對得出來。側面再補一支，用來核對頭和背的高度。
+
+**主影片：斜角 45°（10 秒）**
+
+```text
+Animate the exact stylized cartoon beagle dog game model shown in 圖1 (reference image).
+Preserve its exact body proportions, colors, markings and exactly four legs — do not add, remove or merge limbs.
+Three-quarter view from the dog's front-left, about 45 degrees, camera slightly above eye level, all four legs visible, the whole body always fully in frame.
+Start from the exact standing pose in 圖1 and END in that same standing pose, so the clip can chain back to idle.
+Locked-off camera, no cuts, no zoom, no camera rotation, no motion blur, no slow motion.
+Keep the plain flat grey studio background and even lighting exactly like 圖1. No ground shadow, no props, no text.
+It is a happy, energetic dog: mouth open, panting with the pink tongue visible, eyes bright, long soft ears flopping with every movement, tail wagging, the whole body loose and lively.
+The dog stands for one second, lies down on its belly, then rolls over onto its back toward the camera: all four legs go up in the air with the paws relaxed and curled, belly up, head tipped sideways with the tongue lolling out and the ears spread flat on the floor, tail wagging; it wriggles happily on its back for two seconds, then rolls back onto its belly and stands up again.
+Audio: a soft rustling roll, a happy groan, relaxed panting, no music.
+```
+
+**副影片：側面（10 秒）**：把第三行換成 `Strict side-view profile, facing left, the whole body always fully in frame.`，其他不變。
+
+> 目前的對位程式只讀側面，所以翻肚會是「側面影片對身體高度和腿的上下，斜角影片給 Claude 看滾的方向、手動補腿的左右」。這是第一個需要兩支影片一起看的動作，做的時候先用側面跑一次，看哪裡穿模再對著斜角影片修。
 
 ## 5. 哪些動作側面不夠，要補角度
 
