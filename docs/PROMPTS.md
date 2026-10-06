@@ -6,6 +6,16 @@
 > [!IMPORTANT]
 > 目前的對位程式只讀**側面**影片。下面標「＋正面」「＋斜角」的動作，是指**同一個動作要多生一支別的角度**：側面那支拿來對骨架，其他角度給 AI 看「身體往哪邊轉、腳往哪邊伸」，手動補那些側面看不出來的關節。多角度自動對位還沒做。
 
+## 0. 第一行：動作名稱（每支都放）
+
+影片工具沒有「標題」欄位，列表裡只看得到 Prompt 開頭。所以**第一行永遠是動作名稱**，格式固定：
+
+```text
+[Beagle · HungryBeg 討食 · 側面 · 5s]
+```
+
+角色 · 代號 中文 · 角度 · 秒數。這一行不影響生成，純粹讓人在列表裡一眼認出來。
+
 ## 1. 固定段（每支都放，不要改）
 
 ```text
@@ -20,7 +30,8 @@ Keep the plain flat grey studio background and even lighting exactly like 圖1. 
 
 > **為什麼一定要「頭尾同一個站姿」**：遊戲裡每支動畫都要接回待機。循環動作（走、跑）靠程式找週期；一次性動作（吃、喝、坐）靠影片頭尾都是站姿，程式再把頭尾幾格釘回站姿，接點才看不出來。影片本身沒有這段，程式救不回來。
 
-> **用「圖1」而不是「the supplied image」**：我們的影片工具在「圖生影片」模式會失敗，實際是走「文生影片＋參考圖」，參考圖的代號就是「圖1」。
+> [!CAUTION]
+> **「文生影片＋參考圖」會把風格重新詮釋**（2026-10-06 實測：討食那支變成平面 2D 卡通狗），這種影片剪影比例都不對，**不能拿來對骨架**。要保住模型長相，只能走「圖生影片」（把圖當第一格）。我們的工具這個模式目前送出會失敗（HTTP 400），解法是從一支舊的「圖生影片」工作按「微調再生成」改 Prompt，或等工具修好。Prompt 裡稱參考圖「圖1」在兩種模式都通用。
 
 `{VIEW}` 三選一：
 
@@ -69,6 +80,7 @@ The tail is up and wags; the whole body is loose and lively, never stiff or robo
 ## 4. 組合範例（直接貼）
 
 ```text
+[Beagle · PlayBow 邀玩鞠躬 · 側面 · 5s]
 Animate the exact stylized cartoon beagle dog game model in the supplied image.
 Preserve its exact body proportions, colors, markings and exactly four legs — do not add, remove or merge limbs.
 Strict side-view profile, facing left, the whole body always fully in frame.
@@ -89,6 +101,7 @@ Audio: an excited playful bark, fast tail swishing, a bouncy paw thump, no music
 **主影片：斜角 45°（10 秒）**
 
 ```text
+[Beagle · BellyUp 翻肚 · 斜角45° · 10s]
 Animate the exact stylized cartoon beagle dog game model shown in 圖1 (reference image).
 Preserve its exact body proportions, colors, markings and exactly four legs — do not add, remove or merge limbs.
 Three-quarter view from the dog's front-left, about 45 degrees, camera slightly above eye level, all four legs visible, the whole body always fully in frame.
