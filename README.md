@@ -1,16 +1,29 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.svg">
-  <img src="assets/banner-light.svg" width="100%" alt="AI 影片當動作捕捉：讓 AI 拍你的 3D 狗走路，再把骨架逐格對上去">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/banner-dark.svg">
+  <img src="docs/readme/banner-light.svg" width="100%" alt="AI 影片對骨架：讓 AI 拍你的 3D 狗走路，再把骨架逐格對上去">
 </picture>
 
+<h1 align="center">🦴 AI 影片對骨架 · ai-video-to-bones</h1>
+
+<p align="center"><b>拿 AI 生成的影片當動作捕捉，讓 3D 四足角色的骨架一格一格對上去</b><br>你只要說「幫 Beagle 做一支小跑動畫」，剩下的 Claude 做。</p>
+
 <p align="center">
-  <img src="https://img.shields.io/badge/狀態-實驗成功-FDC302?style=flat-square&labelColor=161415" alt="狀態：實驗成功">
+  <a href="https://terry12260201.github.io/heka-pet-review/"><img src="https://img.shields.io/badge/▶%20審片室-看成果-FDC302?style=flat-square&labelColor=161415" alt="審片室：看成果"></a>
+  <img src="https://img.shields.io/badge/狀態-實驗成功-F5F5F5?style=flat-square&labelColor=161415" alt="狀態：實驗成功">
   <img src="https://img.shields.io/badge/難度-中階-F5F5F5?style=flat-square&labelColor=161415" alt="難度：中階">
-  <img src="https://img.shields.io/badge/電腦運算-約%203.5%20分鐘-F5F5F5?style=flat-square&labelColor=161415" alt="電腦運算約 3.5 分鐘">
   <img src="https://img.shields.io/badge/工具-Blender%20%2B%20Python-F5F5F5?style=flat-square&labelColor=161415" alt="工具：Blender + Python">
+  <img src="https://img.shields.io/badge/授權-MIT-F5F5F5?style=flat-square&labelColor=161415" alt="授權：MIT">
 </p>
 
-這是一套「拿 AI 生成的影片當動作來源，把 3D 動物的骨架一格一格對上去」的做法和程式。四足動物的走路動畫，請動畫師手調很花時間，叫 AI 直接寫關鍵影格又會一頓一頓的。看完這篇，你可以用自己的模型和一支 5 秒的 AI 影片，做出一段頭尾接得起來的循環走路動畫。
+<p align="center">
+  <a href="https://terry12260201.github.io/heka-pet-review/">審片室</a> •
+  <a href="#-叫-claude-做人只做三件事">叫 Claude 做</a> •
+  <a href="#-八個步驟">自己跑八個步驟</a> •
+  <a href="docs/SHAKE.md">抖毛做法</a> •
+  <a href="#-給接手的-ai">給接手的 AI</a>
+</p>
+
+這是一套「拿 AI 生成的影片當動作來源，把 3D 動物的骨架一格一格對上去」的做法和程式。四足動物的走路動畫，請動畫師手調很花時間，叫 AI 直接寫關鍵影格又會一頓一頓的。看完這篇，你可以用自己的模型和一支 5 秒的 AI 影片，做出一段頭尾接得起來的循環走路動畫；或者直接把需求丟給 Claude，自己只負責按生成和驗收。
 
 <p align="center">
   <img src="assets/images/compare-loop.gif" width="900" alt="三格並排的循環動畫：左邊是 AI 影片、中間是 Blender 骨架動畫、右邊是把 Blender 的輪廓用紅線疊在 AI 影片上">
@@ -20,7 +33,29 @@
 > [!NOTE]
 > 這個做法來自 YouTube 頻道 **Can It Code?** 的影片〈[Crazy AI Animation Workflow](https://www.youtube.com/watch?v=evK-Y83Qlco)〉。作者沒有公開他的對位程式，這個 repo 是我照影片講的原理，跟 Claude 一起重做出來的版本，不是作者的原始碼。
 
-## 📦 這一包有什麼（分享給夥伴，給這一個連結就夠）
+---
+
+## 📌 目錄
+
+- [這一包有什麼](#-這一包有什麼)
+- [叫 Claude 做：人只做三件事](#-叫-claude-做人只做三件事)
+- [先講結論](#-先講結論)
+- [它是怎麼運作的](#-它是怎麼運作的)
+- [開始前準備](#-開始前準備)
+- [八個步驟](#-八個步驟)
+- [我踩過的坑](#-我踩過的坑)
+- [目前做過的動作](#-目前做過的動作)
+- [這個做法的極限](#-這個做法的極限)
+- [常見問題](#-常見問題)
+- [給接手的 AI](#-給接手的-ai)
+- [名詞對照表](#-名詞對照表)
+- [更新紀錄](#-更新紀錄)
+
+---
+
+## 📦 這一包有什麼
+
+分享給夥伴，給這一個連結就夠：
 
 | 你想要 | 看這裡 | 一句話 |
 |---|---|---|
@@ -29,19 +64,69 @@
 | 生影片用的 Prompt | [docs/PROMPTS.md](docs/PROMPTS.md) | 20 個動作，含喘氣／舌頭／耳朵的活力段、音效段、哪些要補正面或斜角、翻肚完整版 |
 | 🫨 抖毛、歪頭這類「離開側面」的動作 | [docs/SHAKE.md](docs/SHAKE.md) | 正面＋側面兩支影片、Blender 真網格驗證的完整教學（GPT 版，目前效果最好），腳本在 `scripts/shake_blender/` |
 | 34 段動畫各在哪一步 | [docs/ACTIONS.md](docs/ACTIONS.md) | 每支的來源、狀態、該拍什麼角度、用哪個 Prompt |
-| 自己跑一次 | 這篇往下的「八個步驟」 | 腳本在 `scripts/`，每支動畫一個設定檔在 `scripts/projects/` |
-| 讓 Claude 幫你跑 | 跟 Claude 說「用 ai-video-to-bones 幫 Beagle 做一支〈動作〉」 | 需要裝 `ai-video-to-bones` skill（南瓜團隊內部） |
+| 自己跑一次 | 這篇往下的「[八個步驟](#-八個步驟)」 | 腳本在 `scripts/`，每支動畫一個設定檔在 `scripts/projects/` |
+| 讓 Claude 幫你跑 | 下一節「[叫 Claude 做](#-叫-claude-做人只做三件事)」 | 需要裝 `ai-video-to-bones` skill（南瓜團隊內部） |
 
-## 目錄
+這個 repo 和審片室是兩個分開的地方：
 
-- [💡 先講結論](#-先講結論)
-- [🧩 它是怎麼運作的](#-它是怎麼運作的)
-- [🧰 開始前準備](#-開始前準備)
-- [🚀 八個步驟](#-八個步驟)
-- [🕳️ 我踩過的坑](#️-我踩過的坑)
-- [⚠️ 這個做法的極限](#️-這個做法的極限)
-- [❓ 常見問題](#-常見問題)
-- [📖 名詞對照表](#-名詞對照表)
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'fontFamily':'PingFang TC, Microsoft JhengHei, Noto Sans TC, sans-serif','primaryColor':'#FFFFFF','primaryTextColor':'#161415','primaryBorderColor':'#161415','lineColor':'#8A6400','tertiaryColor':'#F5F5F5','clusterBkg':'#F5F5F5','clusterBorder':'#D9D9D9'}}}%%
+flowchart LR
+  subgraph R["📦 ai-video-to-bones（本 repo）"]
+    S["scripts/<br>對位程式"]
+    D["docs/<br>SOP、Prompt、抖毛教學"]
+  end
+  subgraph V["🎬 heka-pet-review（審片室）"]
+    G["beagle.glb<br>所有動畫"]
+    J["data.js／status.json<br>動畫清單與 QA 狀態"]
+  end
+  S -- "產出 .glb、對照影片" --> G
+  J -- "重產" --> A["docs/ACTIONS.md"]
+  classDef gold fill:#FDC302,stroke:#161415,color:#2D2B2C,font-weight:bold
+  class G gold
+```
+
+本 repo 只放**程式和教學**；做好的動畫、模型、對照影片放在審片室。repo **不附模型和影片**（模型有授權）。
+
+---
+
+## 🗣 叫 Claude 做：人只做三件事
+
+南瓜團隊裝了 `ai-video-to-bones` skill 之後，整條生產線是這樣分工的：
+
+| 步驟 | 誰 | 做什麼 | 做對的話 |
+|---|---|---|---|
+| 1. 講需求 | 👤 你 | 跟 Claude 說「幫〈角色〉做一支〈動作〉動畫」 | Claude 先回你「適不適合」，再給一包：側面參考圖路徑、可直接貼的 Prompt、生成設定 |
+| 2. 按一次生成 | 👤 你 | 到南瓜中控 → AI 影片工坊（要登入），上傳參考圖、貼 Prompt、畫質選「成品」、按生成，把影片檔路徑丟回給 Claude | 拿到一支動物在畫面中間、背景乾淨的影片 |
+| 3. 看結果 | 👤 你 | 打開[審片室](https://terry12260201.github.io/heka-pet-review/)，3D 轉一轉、按「對照 AI 影片」比一比 | 不對就說「第 6 格，遠後腳腳尖翹起來」；對了就說「標成 QA 通過」 |
+
+中間的參考圖、Prompt、逐格對位、匯出、上架審片室，都由 Claude 做。
+
+### 適合／不適合
+
+Claude 接到需求會先分類，不適合的會**先講**，不會做出穿模的東西再解釋。
+
+| | 例子 | 怎麼做 |
+|---|---|---|
+| 🟢 適合 | 走路、小跑、奔跑、原地踏步、低頭嗅聞、吃、喝 | 一支側面影片，走[八個步驟](#-八個步驟) |
+| 🟠 可以，換做法 | 全身抖毛、歪頭、摸頭反應這類「原地甩、頭會側滾」 | 要正面＋側面兩支影片，照 [docs/SHAKE.md](docs/SHAKE.md) 的 Blender 雙視角做法 |
+| 🔴 還沒做過 | 轉圈、回頭、翻肚 | 要多角度影片 |
+| 🟡 不需要 | 只搖尾巴、抖耳朵 | 直接做疊加層更快 |
+
+### 常用的幾句話
+
+```text
+用 ai-video-to-bones 幫 Beagle 做一支走路動畫
+影片生好了，在 ~/Downloads/xxx.mp4
+第 12 格，近前腳太後面
+把 Walk_AIVideo_Loop 標成 QA 通過
+審片室加新角色：貓，模型在…
+```
+
+> [!IMPORTANT]
+> **品質不自認。** Claude 只自驗數字與截圖（重疊率、接縫、腳底高度）；「順不順、像不像」一定留給人在審片室看。同一支修 3 輪還不過，會建議重生影片，不硬凹。
+
+---
 
 ## 💡 先講結論
 
@@ -57,6 +142,8 @@
 | 人工 | 標 20 格 × 4 個腳掌的位置 |
 
 重疊率沒有到 100%，主要是 AI 影片裡的狗會微微變形，跟模型本來就不是同一個形狀。動起來順不順，請直接看上面那張 GIF 判斷。
+
+---
 
 ## 🧩 它是怎麼運作的
 
@@ -85,13 +172,15 @@ flowchart LR
 - **左右腳差半圈**：走路時，右前腳現在的姿勢，就是左前腳半圈之前的姿勢。
 - **前後格要連續**：這一格不能跟上一格、下一格差太多。
 
+---
+
 ## 🧰 開始前準備
 
 | 你需要 | 說明 | 標籤 |
 |---|---|---|
 | 綁好骨架的 3D 模型（`.glb`） | 四足動物，權重要先刷好 | 🟡 自備 |
 | 一支 AI 生成的側面影片（`.mp4`） | 用你自己模型的側面圖去生，做法見步驟零 | 🟡 自備（生成要額度） |
-| [Blender](https://www.blender.org/) 一定要 5或以上的版本  | 我用 5.1.2；不用開視窗，程式會自動在背景跑 | 🟢 免費 |
+| [Blender](https://www.blender.org/) 5 以上 | 我用 5.1.2；不用開視窗，程式會自動在背景跑 | 🟢 免費 |
 | Python 3.10 以上＋三個套件 | `pip install numpy scipy opencv-python` | 🟢 免費 |
 | [ffmpeg](https://ffmpeg.org/) | 拆影片、做對照影片用 | 🟢 免費 |
 
@@ -102,6 +191,8 @@ input/model.glb
 input/video.mp4
 ```
 
+---
+
 ## 🚀 八個步驟
 
 > [!TIP]
@@ -109,7 +200,7 @@ input/video.mp4
 
 **多支動畫怎麼管**：每支動畫一個設定檔 `scripts/projects/<名稱>.py`（影片路徑、動畫名、循環或一次性、腳掌標記），跑的時候加 `AV2B_PROJECT=<名稱>`，中間檔和成品會分別放在 `work/<名稱>/`、`output/<名稱>/`。repo 裡已有 `walk`、`trot`、`run`、`eat`、`drink` 五支的設定可以照抄。
 
-所有指令都在 repo 根目錄下執行。要改的設定全部集中在 [`scripts/config.py`](scripts/config.py)。
+所有指令都在 repo 根目錄下執行。要改的設定全部集中在 [`scripts/config.py`](scripts/config.py)。下面的 Blender 路徑是 macOS 的寫法，Windows 換成你的 `blender.exe` 路徑（`run_all.sh` 可用環境變數 `BLENDER` 指定）。
 
 ### 步驟零：先生出一支好對的影片
 
@@ -130,7 +221,7 @@ input/video.mp4
 
 ### 步驟一：把模型資料匯出來
 
-讓 Blender 把頂點、權重、骨架倒成一個檔，之後對位就不用反覆開 Blender。先在 `config.py` 填好骨架和網格的物件名稱。
+讓 Blender 把頂點、權重、骨架倒成一個檔，之後對位就不用反覆開 Blender。先在 `config.py` 填好骨架和網格的物件名稱（`ARMATURE`、`MESH`）。
 
 ```bash
 /Applications/Blender.app/Contents/MacOS/Blender -b --python scripts/01_export_rig.py
@@ -146,10 +237,7 @@ python3 scripts/02_segment.py
 
 <p align="center"><img src="assets/images/step-masks-framed.png" width="720" alt="八格黑底白色的狗剪影，腿部輪廓完整"></p>
 
-**做對的話**，打開 `work/check_masks.png`，每一格都是完整的白色剪影：腿沒有斷、沒有多出來的線。
-
-> [!TIP]
-> 腿斷掉或缺一塊，把 `config.py` 的 `BG_THRESHOLD` 調小；背景有雜點被當成狗，就調大。
+**做對的話**，打開 `work/check_masks.png`，每一格都是完整的白色剪影：腿沒有斷、沒有多出來的線。腿斷掉或缺一塊，把 `config.py` 的 `BG_THRESHOLD` 調小；背景有雜點被當成狗，就調大。
 
 ### 步驟三：找出走一圈要幾格
 
@@ -176,7 +264,7 @@ python3 scripts/04_calibrate.py
 
 <p align="center"><img src="assets/images/step-calib-framed.png" width="480" alt="模型剪影與影片剪影疊在一起，絕大部分是黃色，只有邊緣有少量紅色和綠色"></p>
 
-**做對的話**，重疊率在 0.9 以上，疊圖幾乎全黃（黃＝重疊、綠＝只有影片、紅＝只有模型）。
+**做對的話**，重疊率在 0.9 以上，疊圖幾乎全黃（黃＝重疊、綠＝只有影片、紅＝只有模型）。同一個模型、同一張參考圖生的影片，攝影機幾乎一樣，可以用 `AV2B_CAM_INIT=work/cam_cycle.npy` 拿上一支的結果當起點。
 
 ### 步驟五：標腳掌
 
@@ -184,7 +272,7 @@ python3 scripts/04_calibrate.py
 python3 scripts/05_annotate_sheets.py
 ```
 
-程式會產生帶座標格線的腿部特寫圖。看圖讀出每一格四個腳掌中心的座標，填進 `config.py` 的 `KP`。
+程式會產生帶座標格線的腿部特寫圖。看圖讀出每一格四個腳掌中心的座標，填進 `config.py` 的 `KP`。腿交疊多的動作（奔跑），改用 `05b_frame_pairs.py` 產生兩格一張的放大特寫，座標格線直接是影片像素。
 
 <p align="center"><img src="assets/images/step-annotate-framed.png" width="760" alt="四格狗腿特寫，上面畫了藍色座標格線，每 100 像素標一個數字"></p>
 
@@ -193,7 +281,7 @@ python3 scripts/05_annotate_sheets.py
 <details>
 <summary><b>怎麼分辨近側腳和遠側腳？</b></summary>
 
-- **看花紋**：我的狗只有靠鏡頭那側的肩膀有棕色斑塊，有斑塊的那條就是近前腳。
+- **看花紋**：我的狗只有靠鏡頭那側的肩膀有棕色斑塊，有斑塊的那條就是近前腳。（但同一個花紋兩側都有的模型，就不能靠花紋分。）
 - **看高低**：鏡頭有一點透視，近側的腳掌踩地時，在畫面上會比遠側的低 20 到 25 像素。
 - **看連續性**：踩在地上的腳，每一格只會往後移一點；突然往前跳很遠的，是正在跨步的那條。
 - **看不到的**：被擋住或跑出畫面的腳掌，用前後格猜一個位置，第三個數字填 `0.3`（代表「我不太確定」）。
@@ -208,7 +296,7 @@ python3 scripts/06_fit_cycle.py
 
 <p align="center"><img src="assets/images/step-fit-framed.png" width="760" alt="二十格模型與影片的剪影疊圖，大部分是黃色，腳掌位置有白點和紫點"></p>
 
-**做對的話**，平均重疊率在 0.88 以上，`work/check_fit.png` 裡白點（你標的）和紫點（模型的腳掌）大致疊在一起。
+**做對的話**，平均重疊率在 0.88 以上（最低 0.85 以上），`work/check_fit.png` 裡白點（你標的）和紫點（模型的腳掌）大致疊在一起。
 
 ### 步驟七：寫回 Blender，做對照影片
 
@@ -228,6 +316,14 @@ python3 scripts/06_fit_cycle.py
 
 <p align="center"><img src="assets/images/compare-4frames-framed.png" width="760" alt="四個時間點的三格對照：AI 影片、Blender 骨架動畫、輪廓疊圖"></p>
 
+要把好幾支動畫一起放進同一顆模型（並疊上「臉要活」的生命感層），用合併匯出：
+
+```bash
+blender -b --python scripts/09_merge_export.py -- walk trot run eat drink
+```
+
+**做對的話**，`output/merged/model_all_actions.glb` 會是「原本的動畫＋新的這幾支」，原有動畫的名稱與長度都沒變。
+
 ### 一次性動作（吃、喝、坐下）怎麼跑
 
 把設定檔的 `MODE` 改成 `"oneshot"`，給 `START`、`END`（影片第幾格到第幾格）和 `STEP`（每幾格對一次，10 秒影片用 2）。這個模式：
@@ -235,12 +331,16 @@ python3 scripts/06_fit_cycle.py
 - 不找循環、不接頭尾、不用「左右腳差半圈」。
 - 腳掌預設**留在站姿的位置**（吃、喝、聞地面都成立），所以通常不用標腳掌；要是動作會移動腳（坐下的後腳），再補 `KP`。
 - 多了耳朵（`Ear_01.L/R`）和嘴巴（`mouth`）兩種關節，低頭時耳朵垂下、嘴巴開合都對得到。
+- 頭尾各 6 格釘回站姿（`EDGE_FRAMES`），才接得回待機；Prompt 也一定要寫「頭尾都是圖 1 的站姿」。
 - 匯出時每 `STEP` 格打一個關鍵影格，中間由 Blender 內插。
 
 ### 離開側面平面的動作（抖毛、歪頭）：要第二支正面影片
 
-> [!IMPORTANT]
-> **2026-10-07 起，這類動作改走 [docs/SHAKE.md](docs/SHAKE.md)（Blender 雙視角做法）。** 南瓜比較後認定 GPT 用這套做的抖毛效果最好（審片室 [`BodyShake_Loop`](https://terry12260201.github.io/heka-pet-review/#clip=BodyShake_Loop)）。重點差別：正面影片量**鼻尖＋眼線**數值求解頭頸、IK 解腳、每 1/4 幀量真正的腳底頂點、穿插看 Blender 變形後的網格、GLB 匯出後讀回比對。下面這段是 10/6 的舊做法，留著當紀錄。
+> [!WARNING]
+> **2026-10-07 起，這類動作改走 [docs/SHAKE.md](docs/SHAKE.md)（Blender 雙視角做法），不要再用下面的 `06b`／`06c`。** 南瓜比較後認定 GPT 用這套做的抖毛效果最好（審片室 [`BodyShake_Loop`](https://terry12260201.github.io/heka-pet-review/#clip=BodyShake_Loop)）。重點差別：正面影片量**鼻尖＋眼線**數值求解頭頸、IK 解腳、每 1/4 幀量真正的腳底頂點、穿插看 Blender 變形後的網格、GLB 匯出後讀回比對。
+
+<details>
+<summary><b>📜 10/6 的舊做法（留著當紀錄）</b></summary>
 
 側面剪影讀不到「頭左右側滾、耳朵往兩邊飛」。我試過照影片節奏用程式硬補，結果像亂甩（南瓜一眼就退回）。當時的做法：
 
@@ -249,12 +349,15 @@ python3 scripts/06_fit_cycle.py
 3. `06c_combine_views.py 側面專案 正面專案 側面起 側面止 正面起 正面止`：側面給 X 軸關節（身體、四肢），正面給 Y／Z 軸關節和耳朵，兩支影片用「開始動／停止動的格」線性對齊。
 
 兩支影片不是同一次生的，節奏一定有差；對齊只能到「同一段時間裡甩了差不多的次數」，不是逐格精準。
+</details>
 
 ### 步驟八：人眼驗收，逐格修
 
 打開 `compare.mp4` 看。哪一格不對，回去改那一格的腳掌標記，再跑一次步驟六和七。影片作者把這個叫「小實驗室」：只要說「第 47 格，腿往後跳了」，幾輪就修好。
 
-## 🕳️ 我踩過的坑
+---
+
+## 🪤 我踩過的坑
 
 這幾個坑各花了我一輪重做，照順序列出來。
 
@@ -286,6 +389,8 @@ python3 scripts/06_fit_cycle.py
 
 </details>
 
+---
+
 ## 📊 目前做過的動作
 
 <p align="center">
@@ -293,40 +398,45 @@ python3 scripts/06_fit_cycle.py
   <br><sub>▲ 第二支：小跑，13 格一圈。做法跟走路完全一樣，只改了設定檔。</sub>
 </p>
 
-
 | 動作 | 類型 | 格數 | 剪影重疊率（平均／最低） | 備註 |
 |---|---|---|---|---|
 | 走路 `walk` | 循環 | 20 | 0.90／0.88 | 第一支，流程就是用它建起來的 |
 | 小跑 `trot` | 循環 | 13 | 0.90／0.88 | 對角步態，左右對稱約束有效 |
-| 奔跑 `run` | 循環 | 13 | 0.86／0.84 | 不對稱步態，關掉對稱約束；腿交疊多，腳掌標記最難讀 |
+| 奔跑 `run` | 循環 | 13 | 0.86／0.84 | 不對稱步態，關掉對稱約束（`SYMMETRY = False`）；腿交疊多，腳掌標記最難讀 |
 | 吃東西 `eat` | 一次性 | 120（每 2 格） | 見 `work/eat/` | 頭、頸、耳朵、嘴巴為主，腳不動 |
 | 喝水 `drink` | 一次性 | 120（每 2 格） | 見 `work/drink/` | 同上 |
 | 全身抖毛 `BodyShake_Loop` | 循環（首尾站姿） | 120（每 1/4 格解一次腳） | 不用剪影；鼻尖投影誤差中位 0.6 px | **Blender 雙視角做法**，見 [docs/SHAKE.md](docs/SHAKE.md)；耳尖彎曲、閉眼外觀與影片仍有差 |
 
-## ⚠️ 這個做法的極限
+全部 34 段動畫各在哪一站，看 [docs/ACTIONS.md](docs/ACTIONS.md) 或直接開[審片室](https://terry12260201.github.io/heka-pet-review/)。
 
-> [!WARNING]
+---
+
+## 🚧 這個做法的極限
+
+> [!CAUTION]
 > 單一支側面影片沒有深度資訊，所以只有「側面看得到的動作」做得出來。**人物動作不適用**，影片作者自己試過，手和物件會穿過身體。
 
-- **只會動側面那個平面。** 身體左右搖擺、尾巴橫甩、轉頭看鏡頭，影片裡看不出來，動畫裡也不會有。這些要另外疊一層程序化動畫。
-- **耳朵沒做。** 這次沒有把耳朵骨頭放進調整清單。
+- **只會動側面那個平面。** 身體左右搖擺、尾巴橫甩、轉頭看鏡頭，側面影片裡看不出來；要嘛走抖毛那套雙視角做法，要嘛另外疊一層程序化動畫。
 - **腳掌角度不是每格都準。** 例如遠側後腳有幾格是腳尖朝下，影片裡是平踩。
 - **腳掌要人標（或請 AI 看圖標）。** 20 格 × 4 個點，目前省不掉。
-- **會轉向鏡頭、會翻身的動作不行。** 解法是多角度影片，作者下一集在試，我還沒做。
+- **會轉向鏡頭、會翻身的動作還沒做過。** 解法是多角度影片，作者下一集在試，我還沒做。
+- **審片室目前只有 Beagle 一個角色**，多角色切換還沒做。
+
+---
 
 ## ❓ 常見問題
 
 <details>
 <summary><b>換一隻動物要改哪裡？</b></summary>
 
-只改 `scripts/config.py`：物件名稱、要調整的骨頭清單（`DOF`）、每條腿的骨頭鏈（`leg_chain`）、關節範圍（`LIMITS`）、腳掌標記（`KP`）。骨頭名稱照你的骨架填。
+只改 `scripts/config.py`（或新開一個 `scripts/projects/<名稱>.py`）：物件名稱、要調整的骨頭清單（`DOF`）、每條腿的骨頭鏈（`leg_chain`）、關節範圍（`LIMITS`）、腳掌標記（`KP`）。骨頭名稱照你的骨架填。
 
 </details>
 
 <details>
 <summary><b>校正攝影機的重疊率一直上不去？</b></summary>
 
-通常是 `CALIB_FRAME` 選到的那一格，動物的姿勢跟模型原始姿勢差太多。挑一格最像「站著不動」的。如果影片第一格是你丟進去的原圖（背景不一樣），跳過它。
+通常是 `CALIB_FRAME` 選到的那一格，動物的姿勢跟模型原始姿勢差太多。挑一格最像「站著不動」、背景已經變成灰色的。如果影片前幾格是你丟進去的原圖（背景不一樣），跳過它們。
 
 </details>
 
@@ -344,6 +454,81 @@ python3 scripts/06_fit_cycle.py
 
 </details>
 
+<details>
+<summary><b>影片生成工具用「文生影片＋參考圖」可以嗎？</b></summary>
+
+不行。實測風格會跑掉（狗變成平面 2D 卡通），剪影比例不對。要用「圖生影片」模式，首幀就是側面參考圖；詳細的可行路線寫在 [docs/SOP.md](docs/SOP.md) 的 Prompt 段。
+
+</details>
+
+---
+
+## 🤖 給接手的 AI
+
+這段給下一個接手的 AI（或工程師）。讀完這段＋[docs/SOP.md](docs/SOP.md)＋（抖毛類）[docs/SHAKE.md](docs/SHAKE.md) 就能開工。
+
+### 檔案地圖
+
+| 路徑 | 做什麼 |
+|---|---|
+| `scripts/config.py` | 所有設定集中處：路徑、`MODE`、`ARMATURE`／`MESH`、`DOF`、`LIMITS`、`KP`、`CYCLE_*`、`CALIB_FRAME`、`GROUND_Y` |
+| `scripts/projects/*.py` | 每支動畫一個設定檔（`walk`、`trot`、`run`、`eat`、`drink`、`shake`、`shake_front`），用 `AV2B_PROJECT=<名稱>` 套用 |
+| `scripts/fitlib.py` | 共用核心：numpy 蒙皮、投影、剪影誤差 |
+| `scripts/00`–`08` | 側面做法主線：參考圖 → 匯出骨架 → 剪影 → 找循環 → 校正 → 標記圖 → 貼合 → 寫回 Blender → 對照影片 |
+| `scripts/05b_frame_pairs.py` | 兩格一張的放大特寫，讀腳掌座標用 |
+| `scripts/06b`／`06c`／`06d` | 10/6 舊的甩動層、兩視角合成、正面訊號（**抖毛類已改走 SHAKE.md，不要再用**） |
+| `scripts/09_merge_export.py` | 多支動畫合併匯出＋生命感層（臉／耳／舌／眼 16 根骨頭疊 `Idle_1`） |
+| `scripts/10_qa.py` | 數字 QA |
+| `scripts/run_all.sh` | 一鍵跑完；`BLENDER` 環境變數指定 Blender、`SKIP_PREP=1` 跳過前處理 |
+| `scripts/shake_blender/` | 抖毛雙視角腳本包；**檔名編號不是執行順序**，照該資料夾 README 的表跑 |
+| `docs/SOP.md`、`docs/PROMPTS.md` | 人機分工、影片設定、Prompt 範本 |
+| `docs/SHAKE.md` | 抖毛做法：第一部白話、第二部技術、第三部接手咒語 |
+| `docs/ACTIONS.md` | 34 段動畫清單，從審片室 `data.js`／`status.json` 產生 |
+| `assets/` | README 用的 GIF 與截圖；`docs/readme/` 是 Banner |
+| `input/` | 放 `model.glb`、`video.mp4`（git 忽略，不公開） |
+
+### SKILL.md 摘要
+
+skill 名稱 `ai-video-to-bones`。skill 規則檔 `SKILL.md` 目前還在私有總倉庫 `pumpkin-skills/skills/ai-video-to-bones/`，因為裡面有內部系統網址與操作細節，沒有放進這個公開 repo。
+
+- **觸發詞**：AI 影片對位、影片轉動畫、照影片綁動畫、ai-video-to-bones、幫 XX 做走路／小跑／奔跑動畫、影片生好了、審片室更新、把動畫標成 QA 通過、審片室加新角色、側面參考圖、影片 Prompt。
+- **流程 A–F**：A 接需求（先判斷適不適合 → 算參考圖 → 寫 Prompt → 回一包）；B 影片到了（01→04 每步看檢查圖 → 標腳掌 → `run_all.sh`）；C 上架審片室；D 逐格修；E 改 QA 狀態（只改 `status.json`）；F 加新角色（先檢查骨架、等確認再動工）。
+- **三條鐵則（2026-10-06）**：①臉要活：一律用 `09_merge_export.py` 匯出，不用 `07` 單獨匯出的 glb 上審片室；②每支都要能接：循環靠找週期、一次性動作頭尾釘回站姿；③動作卡卡先懷疑腳掌標記，不要硬凹。
+- **其他鐵則**：品質不自認；不適合的動作先講；純剪影一定要標腳掌；公開 repo 不放模型與影片；送影片生成前在對話講清楚支數。
+
+### 資料放哪
+
+| 東西 | 位置 |
+|---|---|
+| 程式與教學 | 本 repo（本機 `~/GitHub/ai-video-to-bones`） |
+| 審片室 | `~/GitHub/heka-pet-review`（[Pages](https://terry12260201.github.io/heka-pet-review/)）：`beagle.glb`、`model/Beagle_HEKA.blend`、`data.js`、`status.json`、`media/`、`thumbs/` |
+| 模型、AI 影片 | 不在 repo；各自放 `input/`（git 忽略） |
+| 抖毛原始成果（`motion_fit.npz`、`rig.npz`、對照逐幀、驗證數據） | 只在南瓜本機 `電子寵物狗的動作/輸出_抖毛_Loop_20261006/`，不公開 |
+| 影片生成 | 南瓜中控的 AI 影片工坊，要登入；帳號與網址不寫在這裡 |
+
+### 怎麼驗證改對了
+
+- **側面做法**：`03` 首尾重疊率 ≥ 0.97；`04` 校正重疊率 ≥ 0.9；`06` 平均重疊率 ≥ 0.88、最低 ≥ 0.85；從 `output/cmp` 抽 4 格看四條腿前後順序跟影片一致。
+- **合併匯出**：原有動畫名稱與長度都沒變、只多新的那幾支。
+- **抖毛做法**：接縫、腳底、穿插數據；GLB 匯出後讀回 Blender，481 點比網格才算完成（細節見 SHAKE.md「做到什麼程度，才能說完成」）。
+- **上架審片室**：本機 `python3 -m http.server`＋headless Chrome 截 `index.html#clip=<動畫名>`，確認 3D 有播、按鈕在。
+
+### 改完要同步哪裡
+
+- 改了審片室的 `data.js`／`status.json` → 重產 `docs/ACTIONS.md`。
+- 改了流程或鐵則 → 同步私有 `pumpkin-skills` 的 `SKILL.md`。
+- push 前先跟南瓜確認。
+
+### 已知的坑
+
+- 腳本檔名不要叫 `inspect.py` 這種會蓋掉 Python 內建模組的名字。
+- `shake_blender/17_stabilize_chest.py` 每跑一次胸口側翻再乘 0.3，**只能跑一次**；跑完一定要重解前腳（`15`）再重量腳底。
+- `shake_blender/01_inspect.py` 會清空 Blender 場景，只在獨立工作副本跑。
+- 抖毛類動畫用 `merge_into_review.py` 原封不動併入審片室，不要用 `09_merge_export.py` 重取樣成 24 fps，也不疊生命感層（它自帶耳／舌／眼皮）。
+- 影片生成工具「文生影片＋參考圖」風格會跑掉；有的影片前幾格是深色截圖，`CALIB_FRAME` 要避開。
+
+---
+
 ## 📖 名詞對照表
 
 | 名詞 | 白話 | 在這篇的角色 |
@@ -357,6 +542,20 @@ python3 scripts/06_fit_cycle.py
 | 循環（loop） | 最後一格接回第一格，可以無限播 | 遊戲裡的走路動畫都要這樣 |
 | 近側／遠側腳 | 靠鏡頭那邊的腳和另一邊的腳 | 剪影分不出來，所以要人標 |
 | 最佳化 | 一直微調、看誤差有沒有變小，直到調不動 | 貼合那一步的做法 |
+| 生命感層 | 把待機動畫裡臉、耳、舌、眼的動作疊到新動畫上 | 讓對位出來的動畫不像標本 |
+| 審片室 | 放所有動畫 3D 預覽、對照影片和 QA 狀態的網頁 | 人眼驗收的地方 |
+
+---
+
+## 📝 更新紀錄
+
+| 日期 | 重點 |
+|---|---|
+| 2026-10-07 | 抖毛 Blender 雙視角做法（GPT 版）：`docs/SHAKE.md`＋`scripts/shake_blender/`；README 整合 skill 使用說明與接手段 |
+| 2026-10-06 | 多專案設定、一次性模式、小跑／奔跑／吃／喝四支；合併匯出＋生命感層；Prompt v2（聲音、活力、多角度）；動作清單；軸向關節與兩視角合成（舊做法） |
+| 2026-10-04 | 第一版：Beagle 走路循環，20 格一圈，平均重疊率 0.90；SOP、Prompt 範本、側面參考圖腳本 |
+
+---
 
 ## 下一步
 
@@ -366,4 +565,4 @@ python3 scripts/06_fit_cycle.py
 
 程式碼以 [MIT 授權](LICENSE) 釋出。
 
-<sub>— 南瓜｜南瓜虛擬科技 · XR／3D／AI 工作流 · 最後更新 2026-10-04</sub>
+<sub>🎃 屬於 [pumpkin-skills 南瓜自建 AI 技能庫](https://github.com/terry12260201/pumpkin-skills) · 由 南瓜虛擬科技 製作 · 最後更新 2026-10-07</sub>
