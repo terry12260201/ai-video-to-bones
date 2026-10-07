@@ -24,10 +24,11 @@
 
 | 你想要 | 看這裡 | 一句話 |
 |---|---|---|
-| 看成果、看進度、下載模型 | [審片室（網頁）](https://terry12260201.github.io/heka-pet-review/) | 32 段動畫 3D 直接播、每支的 QA 狀態、生產線走到哪一站 |
+| 看成果、看進度、下載模型 | [審片室（網頁）](https://terry12260201.github.io/heka-pet-review/) | 34 段動畫 3D 直接播、每支的 QA 狀態、生產線走到哪一站 |
 | 人要做什麼、AI 要做什麼 | [docs/SOP.md](docs/SOP.md) | 七步分工表，人只做三件事 |
 | 生影片用的 Prompt | [docs/PROMPTS.md](docs/PROMPTS.md) | 20 個動作，含喘氣／舌頭／耳朵的活力段、音效段、哪些要補正面或斜角、翻肚完整版 |
-| 32 段動畫各在哪一步 | [docs/ACTIONS.md](docs/ACTIONS.md) | 每支的來源、狀態、該拍什麼角度、用哪個 Prompt |
+| 🫨 抖毛、歪頭這類「離開側面」的動作 | [docs/SHAKE.md](docs/SHAKE.md) | 正面＋側面兩支影片、Blender 真網格驗證的完整教學（GPT 版，目前效果最好），腳本在 `scripts/shake_blender/` |
+| 34 段動畫各在哪一步 | [docs/ACTIONS.md](docs/ACTIONS.md) | 每支的來源、狀態、該拍什麼角度、用哪個 Prompt |
 | 自己跑一次 | 這篇往下的「八個步驟」 | 腳本在 `scripts/`，每支動畫一個設定檔在 `scripts/projects/` |
 | 讓 Claude 幫你跑 | 跟 Claude 說「用 ai-video-to-bones 幫 Beagle 做一支〈動作〉」 | 需要裝 `ai-video-to-bones` skill（南瓜團隊內部） |
 
@@ -238,7 +239,10 @@ python3 scripts/06_fit_cycle.py
 
 ### 離開側面平面的動作（抖毛、歪頭）：要第二支正面影片
 
-側面剪影讀不到「頭左右側滾、耳朵往兩邊飛」。我試過照影片節奏用程式硬補，結果像亂甩（南瓜一眼就退回）。正確做法：
+> [!IMPORTANT]
+> **2026-10-07 起，這類動作改走 [docs/SHAKE.md](docs/SHAKE.md)（Blender 雙視角做法）。** 南瓜比較後認定 GPT 用這套做的抖毛效果最好（審片室 [`BodyShake_Loop`](https://terry12260201.github.io/heka-pet-review/#clip=BodyShake_Loop)）。重點差別：正面影片量**鼻尖＋眼線**數值求解頭頸、IK 解腳、每 1/4 幀量真正的腳底頂點、穿插看 Blender 變形後的網格、GLB 匯出後讀回比對。下面這段是 10/6 的舊做法，留著當紀錄。
+
+側面剪影讀不到「頭左右側滾、耳朵往兩邊飛」。我試過照影片節奏用程式硬補，結果像亂甩（南瓜一眼就退回）。當時的做法：
 
 1. 設定檔加 `EXTRA_DOF`（`head:Y` 側滾、`head:Z` 轉頭、`Ear_01.L:Z` 耳朵外翻…）。
 2. 同一個動作再生一支**正面**影片（`AV2B_VIEW=front` 算正面參考圖），另開一個專案 `xxx_front` 對位：正面剪影看得到側滾和耳朵。
@@ -297,6 +301,7 @@ python3 scripts/06_fit_cycle.py
 | 奔跑 `run` | 循環 | 13 | 0.86／0.84 | 不對稱步態，關掉對稱約束；腿交疊多，腳掌標記最難讀 |
 | 吃東西 `eat` | 一次性 | 120（每 2 格） | 見 `work/eat/` | 頭、頸、耳朵、嘴巴為主，腳不動 |
 | 喝水 `drink` | 一次性 | 120（每 2 格） | 見 `work/drink/` | 同上 |
+| 全身抖毛 `BodyShake_Loop` | 循環（首尾站姿） | 120（每 1/4 格解一次腳） | 不用剪影；鼻尖投影誤差中位 0.6 px | **Blender 雙視角做法**，見 [docs/SHAKE.md](docs/SHAKE.md)；耳尖彎曲、閉眼外觀與影片仍有差 |
 
 ## ⚠️ 這個做法的極限
 
